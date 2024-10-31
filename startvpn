@@ -1,0 +1,33 @@
+#!/bin/bash
+
+INTERFACE="enp4s0"
+USER_HOME=/home/$SUDO_USER
+
+config_file="$USER_HOME/.local/openvpn/$1.prod.surfshark.com_udp.ovpn"
+auth_file="$USER_HOME/.local/openvpn/credentials/key"
+
+if [[ $# -eq 0 ]] ; then
+    echo 'Provide a country code, eg: "de-fra" for "de-fra.prod.surfshark.com_udp.ovpn"'
+    exit 1
+fi
+
+if [ -z "$SUDO_USER" ]; then    
+    echo "This script must be run with sudo."
+    exit 1
+fi
+
+echo "USER_HOME=$USER_HOME"
+
+openvpn --config $config_file --auth-user-pass $auth_file
+ifconfig $INTERFACE down
+
+echo "Network interface $INTERFACE has been disabled."
+echo "Restart network (y/n):"
+read response
+
+if [ "$response" = "y" ]; then
+    ifconfig $INTERFACE up
+    echo "Network interface $INTERFACE has been restarted."
+else
+    echo "Network interface $INTERFACE remains disabled."
+fi
